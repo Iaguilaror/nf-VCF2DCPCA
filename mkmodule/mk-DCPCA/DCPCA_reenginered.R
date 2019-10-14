@@ -267,6 +267,14 @@ plotIPC <- function(DF, varA, varB, IPCA, IPCB) {
   min_limit <- DF %>% select(-TAG) %>% min()
   max_limit <- DF %>% select(-TAG) %>% max()
   
+  ## exclusive limits for the biplots
+  rows_min_limit <- DF %>% filter(TAG == "ROWS") %>% select(-TAG) %>% min()
+  rows_max_limit <- DF %>% filter(TAG == "ROWS") %>% select(-TAG) %>% max()
+  
+  ## exclusive limits for the biplots
+  cols_min_limit <- DF %>% filter(TAG == "COLS") %>% select(-TAG) %>% min()
+  cols_max_limit <- DF %>% filter(TAG == "COLS") %>% select(-TAG) %>% max()
+  
   ## define axis names
   xaxisname <- paste(IPCA,round(varA, digits = 2),"%")
   yaxisname <- paste(IPCB,round(varB, digits = 2),"%")
@@ -318,9 +326,9 @@ plotIPC <- function(DF, varA, varB, IPCA, IPCB) {
     geom_vline(xintercept = 0, linetype = "dashed") +
     geom_point(color = "#F8766D", size = dotsize, shape = 16) +
     scale_x_continuous(name = xaxisname,
-                       limits = c(min_limit, max_limit)) +
+                       limits = c(rows_min_limit, rows_max_limit)) +
     scale_y_continuous(name = yaxisname,
-                       limits = c(min_limit, max_limit)) +
+                       limits = c(rows_min_limit, rows_max_limit)) +
     ggtitle(label = "SNPs (ROWS)") +
     mytheme
 
@@ -333,9 +341,9 @@ plotIPC <- function(DF, varA, varB, IPCA, IPCB) {
     geom_vline(xintercept = 0, linetype = "dashed") +
     geom_point(color = "#00BFC4", size = dotsize, shape = 17) +
     scale_x_continuous(name = xaxisname,
-                       limits = c(min_limit, max_limit)) +
+                       limits = c(cols_min_limit, cols_max_limit)) +
     scale_y_continuous(name = yaxisname,
-                       limits = c(min_limit, max_limit)) +
+                       limits = c(cols_min_limit, cols_max_limit)) +
     ggtitle(label = "Samples (COLS)") +
     mytheme
 
