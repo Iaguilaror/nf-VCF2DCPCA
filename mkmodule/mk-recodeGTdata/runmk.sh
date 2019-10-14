@@ -3,5 +3,5 @@
 find -L . \
   -type f \
   -name "*.vcf" \
-| sed "s#.vcf#.GTrecoded.tsv#" \
+| sed "s#.vcf#.GTrecoded.txt#" \
 | xargs mk

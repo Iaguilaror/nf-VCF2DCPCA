@@ -1,4 +1,4 @@
-%.GTrecoded.tsv:Q: %.NOTrecoded.tsv.tmp %.RECODED.tsv.tmp
+%.GTrecoded.txt:Q: %.NOTrecoded.tsv.tmp %.RECODED.tsv.tmp
 	echo "[DEBUG] filtering vcf for $target"
 	echo "[DEBUG] NOTrecoded size:$(wc -l $stem.NOTrecoded.tsv.tmp)"
 	echo "[DEBUG] RECODED size:$(wc -l $stem.RECODED.tsv.tmp)"

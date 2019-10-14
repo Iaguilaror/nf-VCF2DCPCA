@@ -137,10 +137,10 @@ write_table <- function(anova_result,pca_result,NCOL,NAME_COL,NROW,NAME_ROW,TITL
     SS<-formatC(as.numeric(c(anova_result$DSST,anova_result$DSSC,anova_result$DSSR,anova_result$DSSRXC,EV,EV_RES)),digits = 5,format = 'f')
     table=format(data.frame(df,SS,row.names = Source),justify="right",digits=11)
     name=paste("ANOVA for",TITLE,"analysis 4: Double Centered (AMMI)")
-    cat(name,file= paste(TITLE,"anova6.txt",sep=""),append = F,sep='\n')
-    cat("-----------------------------------------------",file= paste(TITLE,"anova6.txt",sep=""),append = TRUE,sep='\n')
-    cat(capture.output(table), file = paste(TITLE,"anova6.txt",sep=""),append= TRUE, sep = '\n')
-    cat("-----------------------------------------------",file= paste(TITLE,"anova6.txt",sep=""),append = TRUE,sep='\n')
+    cat(name,file= paste(TITLE,"anova6.tsv",sep=""),append = F,sep='\n')
+    cat("-----------------------------------------------",file= paste(TITLE,"anova6.tsv",sep=""),append = TRUE,sep='\n')
+    cat(capture.output(table), file = paste(TITLE,"anova6.tsv",sep=""),append= TRUE, sep = '\n')
+    cat("-----------------------------------------------",file= paste(TITLE,"anova6.tsv",sep=""),append = TRUE,sep='\n')
 
     ## return the anova table for extracting SS values
     ## get the DF with the SS values
@@ -212,9 +212,12 @@ PCA7<-function(datamatrix){
     return(PCA_data_list)
 }
 
+## read from arguments from command line
+args = commandArgs(trailingOnly=TRUE)
+i_file <- args[1] 
+
 ## test run
-# useful_data <- PCA7(datamatrix="data/mymatrix.txt")
-useful_data <- PCA7(datamatrix="data/transposed_matrix.txt")
+useful_data <- PCA7(datamatrix = i_file)
 
 ## save the anova df, and re-read to facilitate data transformation...
 write.table(x = useful_data$anova, file = "anovatable.tsv",
@@ -232,7 +235,12 @@ colnames(anova.df) <- c("original_names","df","SS")
 cumulative_eigenvalues <- sum(anova.df[grepl(pattern = "IPC.", x=rownames(anova.df)),3])
 ## calculate % of variance -only is valid for IPC columns
 anova.df$variance_percentage <- anova.df$SS / cumulative_eigenvalues * 100
-  
+
+## rewrite the anova df, and re-read to facilitate data transformation...
+write.table(x = anova.df, file = "anovatable.tsv",
+            append = F, quote = F,
+            sep = "\t", row.names = F, col.names = T)
+
 ## plot with ggplot
 ## separate rows DF
 rows_PCA.df <- data.frame(useful_data$all_PCA_values_for_rows)
@@ -287,6 +295,7 @@ plotIPC <- function(DF, varA, varB, IPCA, IPCB) {
                        limits = c(min_limit, max_limit)) +
     scale_y_continuous(name = yaxisname,
                        limits = c(min_limit, max_limit)) +
+    ggtitle(label = "Biplot") +
     mytheme
   
   ## save plot
@@ -312,6 +321,7 @@ plotIPC <- function(DF, varA, varB, IPCA, IPCB) {
                        limits = c(min_limit, max_limit)) +
     scale_y_continuous(name = yaxisname,
                        limits = c(min_limit, max_limit)) +
+    ggtitle(label = "SNPs (ROWS)") +
     mytheme
 
   ## generate colsplot
@@ -326,6 +336,7 @@ plotIPC <- function(DF, varA, varB, IPCA, IPCB) {
                        limits = c(min_limit, max_limit)) +
     scale_y_continuous(name = yaxisname,
                        limits = c(min_limit, max_limit)) +
+    ggtitle(label = "Samples (COLS)") +
     mytheme
 
   ## generate grid plot

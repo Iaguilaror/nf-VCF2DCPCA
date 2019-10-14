@@ -1,0 +1,3 @@
+%.DCPCA:Q: %.txt
+	echo "[DEBUG] calculate DCPCA for $prereq"
+	Rscript --vanilla DCPCA_reenginered.R $prereq
