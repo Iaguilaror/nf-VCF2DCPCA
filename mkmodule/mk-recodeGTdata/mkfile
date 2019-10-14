@@ -1,0 +1,43 @@
+%.GTrecoded.tsv:Q: %.NOTrecoded.tsv.tmp %.RECODED.tsv.tmp
+	echo "[DEBUG] filtering vcf for $target"
+	echo "[DEBUG] NOTrecoded size:$(wc -l $stem.NOTrecoded.tsv.tmp)"
+	echo "[DEBUG] RECODED size:$(wc -l $stem.RECODED.tsv.tmp)"
+	cat $prereq > $target
+	rm $stem.*tmp*
+
+%.RECODED.tsv.tmp:Q: %.RECODED.vcf.tmp
+	echo "[DEBUG] this data needs to recode: $prereq"
+	bcftools view -H $prereq | cut -f10- \
+	| sed \
+			-e "s#0\/0#1#g" \
+			-e "s#0\/1#1#g" \
+			-e "s#1\/0#1#g" \
+			-e "s#1\/1#0#g" > $target
+
+%.NOTrecoded.tsv.tmp:Q: %.NOTrecoded.vcf.tmp
+	echo "[DEBUG] parsing tmp vcf to tmp tsv for: $prereq"
+	bcftools view -H $prereq | cut -f10- \
+	| sed \
+			-e "s#0\/0#0#g" \
+			-e "s#0\/1#1#g" \
+			-e "s#1\/0#1#g" \
+			-e "s#1\/1#1#g" > $target
+
+%.RECODED.vcf.tmp:Q: %.vcf.gz.tmp %.NOTrecoded.vcf.tmp
+	echo "[DEBUG] find the complementing variants in $prereq"
+	bcftools isec \
+		-p tmp_stuff \
+		$prereq
+	mv tmp_stuff/0000.vcf $target
+	rm -r tmp_stuff
+
+%.NOTrecoded.vcf.tmp:Q: %.vcf
+	echo "[DEBUG] extracting variants with AF <= 50, for: $prereq"
+	bcftools view --max-af 0.5 $prereq \
+	| bgzip -c > $target
+	tabix -p vcf $target
+
+%.vcf.gz.tmp:Q: %.vcf
+	echo "[DEBUG] compress file for isec, from: $prereq"
+	bgzip -c $prereq > $target
+	tabix -p vcf $target
