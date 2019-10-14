@@ -1,0 +1,12 @@
+%.filtered.vcf:Q: %.vcf.gz
+	echo "[DEBUG] filtering vcf"
+	number_of_samples=$(bcftools view -h $prereq | tail -n1 | cut -f10- | tr "\t" "\n" | wc -l)
+	echo "[DEBUG] number of samples is: $number_of_samples"
+	max_an=$((number_of_samples * 2))
+	echo "[DEBUG] max_an is: $max_an"
+	## keep only variants with max AN - i.e. no missing data
+	## keep only SNPS
+	bcftools view \
+		--include "AN>=$max_an" \
+		--types snps \
+		$prereq > $target
