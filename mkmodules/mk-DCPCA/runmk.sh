@@ -2,6 +2,6 @@
 
 find -L . \
   -type f \
-  -name "*.txt" \
-| sed "s#.txt#.DCPCA#" \
+  -name "*.GTrecoded.txt" \
+| sed "s#.GTrecoded.txt#.DCPCA#" \
 | xargs mk

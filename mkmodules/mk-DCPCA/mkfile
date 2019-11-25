@@ -1,3 +1,15 @@
-%.DCPCA:Q: %.txt
-	echo "[DEBUG] calculate DCPCA for $prereq"
-	Rscript --vanilla DCPCA_reenginered.R $prereq
+%.DCPCA:Q: %.GTrecoded.txt %.colnames.tmp %.rownames.tmp
+	echo "[DEBUG] calculate DCPCA for $stem.GTrecoded.txt"
+	Rscript --vanilla DCPCA_reenginered.R $stem.GTrecoded.txt $stem.colnames.tmp $stem.rownames.tmp
+
+%.colnames.tmp:Q: %.vcf
+	echo "[DEBUG] extracting colnames from $prereq"
+	bcftools view -h $prereq \
+	| tail -n1 \
+	| cut -f10- \
+	| tr "\t" "\n" > $target
+
+%.rownames.tmp:Q: %.vcf
+	echo "[DEBUG] extracting row from $prereq"
+	bcftools view -H $prereq \
+	| awk '{ print$1"_"$2"_"$4"_"$5}' > $target

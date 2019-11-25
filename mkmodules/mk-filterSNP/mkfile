@@ -6,7 +6,11 @@
 	echo "[DEBUG] max_an is: $max_an"
 	## keep only variants with max AN - i.e. no missing data
 	## keep only SNPS
+	## remove singletons and private alleles
 	bcftools view \
 		--include "AN>=$max_an" \
 		--types snps \
-		$prereq > $target
+		$prereq \
+	| bcftools view \
+		--min-ac 2 \
+		--exclude 'INFO/AC == 2 & GT="AA"' > $target

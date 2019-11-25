@@ -214,7 +214,17 @@ PCA7<-function(datamatrix){
 
 ## read from arguments from command line
 args = commandArgs(trailingOnly=TRUE)
+
+## for test running
+# args[1] <- "test/data/sample_chr22.filtered.GTrecoded.txt"
+
+## load GT matrix
 i_file <- args[1] 
+
+## load colnames
+colnames_file <- args[2] 
+## load rownames
+rownames_file <- args[3] 
 
 ## test run
 useful_data <- PCA7(datamatrix = i_file)
@@ -248,6 +258,8 @@ rows_PCA.df <- data.frame(useful_data$all_PCA_values_for_rows)
 names(rows_PCA.df) <- paste0("IPC",1:ncol(rows_PCA.df))
 # tag rows as ROWS data
 rows_PCA.df$TAG <- factor("ROWS",levels = c("ROWS","COLS"))
+# tag snp IDs
+# rows_PCA.df$ID <- NA
 
 ## separate cols DF
 cols_PCA.df <- data.frame(useful_data$all_PCA_values_for_cols)
@@ -255,9 +267,22 @@ cols_PCA.df <- data.frame(useful_data$all_PCA_values_for_cols)
 names(cols_PCA.df) <- paste0("IPC",1:ncol(cols_PCA.df))
 # tag rows as COLS data
 cols_PCA.df$TAG <- factor("COLS",levels = c("ROWS","COLS"))
- 
+
 ## bind in a long dataframe with tagged data
 plotable.df <- rbind(rows_PCA.df, cols_PCA.df)
+
+## save dataframes with IPC values
+## read snp IDs from file
+rownames.df <- read.table(file = rownames_file, header = F, sep = "\t", stringsAsFactors = F)
+# tag snp IDs
+rows_PCA.df$ID <- rownames.df$V1
+write.table(x = rows_PCA.df, file = "rowsIPCA.tsv", append = F, quote = F, sep = "\t", row.names = F, col.names = T)
+
+## read sample IDs from file
+colnames.df <- read.table(file = colnames_file, header = F, sep = "\t", stringsAsFactors = F)
+# tag sample IDs
+cols_PCA.df$ID <- colnames.df$V1
+write.table(x = cols_PCA.df, file = "colsIPCA.tsv", append = F, quote = F, sep = "\t", row.names = F, col.names = T)
 
 ## make a function to create and save plots for pairs of IPC
 plotIPC <- function(DF, varA, varB, IPCA, IPCB) {
@@ -270,10 +295,14 @@ plotIPC <- function(DF, varA, varB, IPCA, IPCB) {
   ## exclusive limits for the biplots
   rows_min_limit <- DF %>% filter(TAG == "ROWS") %>% select(-TAG) %>% min()
   rows_max_limit <- DF %>% filter(TAG == "ROWS") %>% select(-TAG) %>% max()
+  ## total number of ROWS data
+  rows_used <- DF %>% filter(TAG == "ROWS") %>% nrow()
   
   ## exclusive limits for the biplots
   cols_min_limit <- DF %>% filter(TAG == "COLS") %>% select(-TAG) %>% min()
   cols_max_limit <- DF %>% filter(TAG == "COLS") %>% select(-TAG) %>% max()
+  ## total number of ROWS data
+  cols_used <- DF %>% filter(TAG == "COLS") %>% nrow()
   
   ## define axis names
   xaxisname <- paste(IPCA,round(varA, digits = 2),"%")
@@ -303,7 +332,8 @@ plotIPC <- function(DF, varA, varB, IPCA, IPCB) {
                        limits = c(min_limit, max_limit)) +
     scale_y_continuous(name = yaxisname,
                        limits = c(min_limit, max_limit)) +
-    ggtitle(label = "Biplot") +
+    ggtitle(label = paste(rows_used, "SNPs (ROWS) in red; ",
+                          cols_used, "Samples (COLS) in blue") ) +
     mytheme
   
   ## save plot
@@ -329,7 +359,7 @@ plotIPC <- function(DF, varA, varB, IPCA, IPCB) {
                        limits = c(rows_min_limit, rows_max_limit)) +
     scale_y_continuous(name = yaxisname,
                        limits = c(rows_min_limit, rows_max_limit)) +
-    ggtitle(label = "SNPs (ROWS)") +
+    ggtitle(label = paste(rows_used, "SNPs (ROWS)")) +
     mytheme
 
   ## generate colsplot
@@ -344,7 +374,7 @@ plotIPC <- function(DF, varA, varB, IPCA, IPCB) {
                        limits = c(cols_min_limit, cols_max_limit)) +
     scale_y_continuous(name = yaxisname,
                        limits = c(cols_min_limit, cols_max_limit)) +
-    ggtitle(label = "Samples (COLS)") +
+    ggtitle(label = paste(cols_used, "Samples (COLS)") ) +
     mytheme
 
   ## generate grid plot

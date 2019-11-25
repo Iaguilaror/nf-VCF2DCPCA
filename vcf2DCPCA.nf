@@ -220,10 +220,10 @@ Channel
 Channel
 	.fromPath("${workflow.projectDir}/mkmodules/mk-filterSNP/*")
 	.toList()
-	.view()
 	.set{ mkfiles_001 }
 
 process _001_filterSNP {
+	echo true
 
 	publishDir "${intermediates_dir}/_001_filterSNP/",mode:"symlink"
 
@@ -232,7 +232,7 @@ process _001_filterSNP {
 	file mk_files from mkfiles_001
 
 	output:
-	file "*.vcf" into results_001
+	file "*.vcf" into results_001, also_results_001
 
 	"""
 	bash runmk.sh
@@ -245,10 +245,10 @@ process _001_filterSNP {
 Channel
 	.fromPath("${workflow.projectDir}/mkmodules/mk-recodeGTdata/*")
 	.toList()
-	.view()
 	.set{ mkfiles_002 }
 
 process _002_recodeGTdata {
+	echo true
 
 	publishDir "${intermediates_dir}/_002_recodeGTdata/",mode:"symlink"
 
@@ -270,15 +270,16 @@ process _002_recodeGTdata {
 Channel
 	.fromPath("${workflow.projectDir}/mkmodules/mk-DCPCA/*")
 	.toList()
-	.view()
 	.set{ mkfiles_003 }
 
 process _003_DCPCA {
+	// echo true
 
 	publishDir "${results_dir}/_003_DCPCA/",mode:"copy"
 
 	input:
 	file sample from results_002
+	file vcf from also_results_001
 	file mk_files from mkfiles_003
 
 	output:
